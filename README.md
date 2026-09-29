@@ -1,4 +1,4 @@
-﻿# Scalable Financial Data Quality & Anomaly Detection Pipeline
+# Scalable Financial Data Quality & Anomaly Detection Pipeline
 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
@@ -96,4 +96,5 @@ Due to the size of the dataset (470MB), it is safely .gitignore'd. To replicate 
    path = kagglehub.dataset_download("ealaxi/paysim1")
    `
 2. **Initialize Infrastructure:** Execute init_db.ps1 to configure the local PostgreSQL server and establish schemas.
-3. **Run ETL & Modeling:** Execute esume.ps1 to trigger the Python ingestion, SQL dimensional modeling, Rule Execution, and the Isolation Forest training.
+3. **Run ETL & Modeling:** Execute 
+esume.ps1 to trigger the Python ingestion, SQL dimensional modeling, Rule Execution, and the Isolation Forest training.
