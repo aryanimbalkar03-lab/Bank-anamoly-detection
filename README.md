@@ -14,9 +14,28 @@ In this project, I architected a hybrid enterprise data pipeline that audits **6
 
 ---
 
-## 2. Architecture & Data Flow
+## 2. End-to-End Pipeline Architecture (0 to 1 Process)
+
+Below is the complete 0 to 1 architectural flowchart demonstrating how raw data is ingested, modeled, audited, and evaluated by machine learning before being served to executives.
+
+`mermaid
+flowchart TD
+    A[0. Raw Kaggle Dataset<br>6.36M Rows] -->|Ingestion| B[(1. PostgreSQL Staging Layer)]
+    B -->|Defect Injection Control| B
+    B -->|Dimensional Modeling| C[(2. Data Warehouse<br>Kimball Star Schema)]
+    
+    C -->|3. Data Quality Auditing| D{SQL Engine<br>30 DAMA Rules}
+    C -->|4. Behavioral Profiling| E{Machine Learning<br>Isolation Forest}
+    
+    D --> F[(5. Aggregated Data Marts)]
+    E --> F
+    
+    F --> G[6. Anthropic LLM Executive Report]
+    F --> H[7. BI Dashboards & Visualizations]
+`
+
 * **Dataset Scope:** 6,362,620 transactions (~470 MB) via Kaggle PaySim.
-* **Pipeline Structure:** As illustrated in the Data Processing Pipeline Health flowchart above, raw telemetry is bulk-ingested, typed in a staging layer, rigorously audited against 30 automated rules, and finally modeled into a Kimball Star Schema for OLAP analysis.
+* **Pipeline Structure:** Raw telemetry is bulk-ingested, typed in a staging layer, rigorously audited against 30 automated rules, and finally modeled into a Kimball Star Schema for OLAP analysis.
 
 ---
 
