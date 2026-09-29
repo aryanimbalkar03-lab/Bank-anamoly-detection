@@ -18,7 +18,7 @@ In this project, I architected a hybrid enterprise data pipeline that audits **6
 
 Below is the complete 0 to 1 architectural flowchart demonstrating how raw data is ingested, modeled, audited, and evaluated by machine learning before being served to executives.
 
-`mermaid
+```mermaid
 flowchart TD
     A[0. Raw Kaggle Dataset<br>6.36M Rows] -->|Ingestion| B[(1. PostgreSQL Staging Layer)]
     B -->|Defect Injection Control| B
@@ -32,7 +32,7 @@ flowchart TD
     
     F --> G[6. Anthropic LLM Executive Report]
     F --> H[7. BI Dashboards & Visualizations]
-`
+```
 
 * **Dataset Scope:** 6,362,620 transactions (~470 MB) via Kaggle PaySim.
 * **Pipeline Structure:** Raw telemetry is bulk-ingested, typed in a staging layer, rigorously audited against 30 automated rules, and finally modeled into a Kimball Star Schema for OLAP analysis.
@@ -42,7 +42,7 @@ flowchart TD
 ## 3. Engineering & Methodology
 
 ### Phase 1: Dimensional Modeling & Query Optimization
-Raw flat-file architectures are incapable of scaling for enterprise analytics. I engineered a **Kimball-style Star Schema** (dw.fact_transactions, dw.dim_customer, dw.dim_txn_type) to optimize the data for downstream aggregations.
+Raw flat-file architectures are incapable of scaling for enterprise analytics. I engineered a **Kimball-style Star Schema** (`dw.fact_transactions`, `dw.dim_customer`, `dw.dim_txn_type`) to optimize the data for downstream aggregations.
 
 **Strategic Impact:** By implementing B-Tree indexing on highly queried dimensions and foreign keys, query execution on the 6.36 million rows was optimized from 68.2 seconds down to 691 milliseconds - a **98.9% computational speedup**.
 
@@ -58,22 +58,22 @@ I deployed **30 automated SQL Stored Procedures** mapped directly to standard DA
 | DAMA Dimension | Defect Analyzed | Injected | Caught | Detection Logic (Method Used) |
 |----------------|-----------------|----------|--------|-------------------------------|
 | **Validity** | BAD_ACCT_FORMAT | 15,780 | 15,780 | Regex pattern mismatch on destination IDs |
-| **Consistency** | BAL_TAMPERING | 30,860 | 30,860 | Ledger mismatch (oldbalance + amount != newbalance) |
-| **Uniqueness** | DUP_TXN | 12,591 | 12,591 | Partitioning window functions ROW_NUMBER() > 1 |
-| **Validity** | INVALID_TYPE | 15,655 | 15,655 | Unmapped ENUM violation in dim_txn_type |
-| **Validity** | NEG_AMOUNT | 30,691 | 30,691 | Mathematical constraint violation (mount < 0) |
-| **Completeness** | NULL_AMOUNT | 31,180 | 31,180 | IS NULL evaluation on critical monetary fields |
+| **Consistency** | BAL_TAMPERING | 30,860 | 30,860 | Ledger mismatch (`oldbalance + amount != newbalance`) |
+| **Uniqueness** | DUP_TXN | 12,591 | 12,591 | Partitioning window functions `ROW_NUMBER() > 1` |
+| **Validity** | INVALID_TYPE | 15,655 | 15,655 | Unmapped ENUM violation in `dim_txn_type` |
+| **Validity** | NEG_AMOUNT | 30,691 | 30,691 | Mathematical constraint violation (`amount < 0`) |
+| **Completeness** | NULL_AMOUNT | 31,180 | 31,180 | `IS NULL` evaluation on critical monetary fields |
 
 ### Phase 3: Machine Learning (Anomaly Detection)
 While rigid SQL frameworks excel at catching structural decay, they are fundamentally incapable of detecting sophisticated fraudsters who execute perfectly formatted, but behaviorally malicious, transactions.
 
-I deployed an unsupervised **Isolation Forest** algorithm (scikit-learn), selected for its O(n log n) time complexity which handles the 6-million-row scale highly efficiently without requiring labeled training data. I engineered **12 complex features** including logarithmic scaling of transaction amounts, 4-hour rolling velocity windows, and balance depletion ratios.
+I deployed an unsupervised **Isolation Forest** algorithm (`scikit-learn`), selected for its `O(n log n)` time complexity which handles the 6-million-row scale highly efficiently without requiring labeled training data. I engineered **12 complex features** including logarithmic scaling of transaction amounts, 4-hour rolling velocity windows, and balance depletion ratios.
 
 **Strategic Impact:**
 ![ML Evaluation Dashboard](assets/dashboard_ml.png)
 
 * The algorithm evaluated all 6.36 million transactions and identified a **Critical Anomaly Threshold at 0.5%**, isolating just **~31,800 transactions** for human review.
-* Within this heavily reduced investigation scope, it successfully captured **True Positive fraud incidents (Recall: 0.0488)** natively hidden in the dataset. This represents a >99% reduction in manual analyst workload while surfacing high-confidence threats based heavily on the log(amount) and balance variance features.
+* Within this heavily reduced investigation scope, it successfully captured **True Positive fraud incidents (Recall: 0.0488)** natively hidden in the dataset. This represents a >99% reduction in manual analyst workload while surfacing high-confidence threats based heavily on the `log(amount)` and balance variance features.
 
 ### Phase 4: Automated Executive Reporting (LLM Integration)
 To bridge the gap between backend engineering and business stakeholders, I integrated the Anthropic API. Upon pipeline completion, the LLM consumes the aggregated SQL exceptions and translates millions of rows into an actionable, plain-text email for executive leadership.
@@ -84,13 +84,12 @@ To bridge the gap between backend engineering and business stakeholders, I integ
 
 ## 4. Local Deployment Instructions
 
-Due to the size of the dataset (470MB), it is safely .gitignore'd. To replicate this platform locally:
+Due to the size of the dataset (470MB), it is safely `.gitignore`'d. To replicate this platform locally:
 
 1. **Fetch Dataset:** Pull the raw logs from Kaggle.
-   `python
+   ```python
    import kagglehub
    path = kagglehub.dataset_download("ealaxi/paysim1")
-   `
-2. **Initialize Infrastructure:** Execute init_db.ps1 to configure the local PostgreSQL server.
-3. **Execute Pipeline:** Run 
-esume.ps1 to trigger the Python ingestion, SQL dimensional modeling, Data Quality Auditing, and the Isolation Forest training.
+   ```
+2. **Initialize Infrastructure:** Execute `init_db.ps1` to configure the local PostgreSQL server.
+3. **Execute Pipeline:** Run `resume.ps1` to trigger the Python ingestion, SQL dimensional modeling, Data Quality Auditing, and the Isolation Forest training.
