@@ -161,16 +161,16 @@ flowchart LR
 
 We deliberately inject known defects into the staging layer to **measure detection rates**. All injections are logged in `qa.injected_defects`.
 
-| Defect Type | Injection Rate | Method |
-|-------------|---------------|--------|
-| NULL_AMOUNT | 0.2% | Set amount = NULL |
-| NEG_AMOUNT | 0.2% | Set amount = -amount |
-| DUP_TXN | 0.2% | Duplicate rows |
-| BAD_ACCT_FORMAT | 0.1% | Set name_orig = 'INVALID_...' |
-| INVALID_TYPE | 0.1% | Set type = 'WIRE' |
-| BAL_TAMPERING | 0.2% | Multiply newbalance_orig × 1.5 |
-| STEP_OUT_OF_RANGE | 0.1% | Set step = -1 |
-| ZERO_AMOUNT | 0.1% | Set amount = 0 |
+| Defect Type | Injected | Caught | Recall % |
+|-------------|----------|--------|----------|
+| BAD_ACCT_FORMAT | 15,780 | 15,780 | 100.0% |
+| BAL_TAMPERING | 30,860 | 30,860 | 100.0% |
+| DUP_TXN | 12,591 | 12,591 | 100.0% |
+| INVALID_TYPE | 15,655 | 15,655 | 100.0% |
+| NEG_AMOUNT | 30,691 | 30,691 | 100.0% |
+| NULL_AMOUNT | 31,180 | 31,180 | 100.0% |
+| STEP_OUT_OF_RANGE | 15,465 | 15,465 | 100.0% |
+| ZERO_AMOUNT | 15,517 | 15,517 | 100.0% |
 
 ### Recall Validation Query
 
