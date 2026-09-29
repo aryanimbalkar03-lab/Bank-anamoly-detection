@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Data files (too large for git)
+*.csv
+data/
+!data/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Power BI temp files
+*.pbix.tmp
+
+# Logs
+*.log
+pipeline.log
+
+# Environment
+.env
+*.env
+
+# Postgres data
+pgdata/
