@@ -12,6 +12,8 @@ In this project, I architected a hybrid enterprise data pipeline that audits **6
 
 ![Executive Overview & Architecture Flow](assets/ui_overview.png)
 
+> *Methodology Note: The UI dashboard visualizations featured in this case study were rapidly prototyped using Gemini Advanced. This GenAI approach was utilized to accelerate the BI visualization phase, demonstrating the target state of the reporting layer while saving days of manual dashboard-building.*
+
 ---
 
 ## 2. End-to-End Pipeline Architecture
