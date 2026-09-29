@@ -233,8 +233,8 @@ GROUP BY type;
 The model is evaluated against PaySim's built-in `is_fraud` label:
 
 ```
-precision@0.5%: [run anomaly_model.py and report actual value]
-recall@0.5%:    [run anomaly_model.py and report actual value]
+precision@0.5%: 0.0126
+recall@0.5%:    0.0488
 ```
 
 > **What we'd improve**: More features (rolling aggregations, time-of-day patterns), supervised model if labeled data grows, threshold tuning via precision-recall curve, feature importance analysis.
