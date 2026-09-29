@@ -10,7 +10,7 @@ As financial institutions process millions of daily transactions, data integrity
 
 In this project, I architected a hybrid enterprise data pipeline that audits **6.36 million financial transactions**. By integrating a deterministic **PostgreSQL Data Quality Engine** to enforce structural data governance with an unsupervised **Machine Learning Model** to isolate complex behavioral fraud, this platform drastically reduces manual investigation workloads while surfacing high-priority threats.
 
-![Executive Overview & Architecture Flow](assets/dashboard_overview.png)
+![Executive Overview & Architecture Flow](assets/ui_overview.png)
 
 ---
 
@@ -74,7 +74,7 @@ Raw flat-file architectures are incapable of scaling for enterprise analytics. I
 
 **Strategic Impact:** By implementing B-Tree indexing on highly queried dimensions and foreign keys, query execution on the 6.36 million rows was optimized from 68.2 seconds down to 691 milliseconds - a **98.9% computational speedup**.
 
-![Query Performance Optimization](assets/dashboard_performance.png)
+![Query Performance Optimization](assets/ui_performance.png)
 
 ### Phase 2: Data Quality Governance (DAMA Framework)
 To mathematically validate the auditing engine, I established a control group by intentionally seeding **167,739 synthetic errors** into the staging layer using fixed random seeds. 
@@ -98,7 +98,7 @@ While rigid SQL frameworks excel at catching structural decay, they are fundamen
 I deployed an unsupervised **Isolation Forest** algorithm (`scikit-learn`), selected for its `O(n log n)` time complexity which handles the 6-million-row scale highly efficiently without requiring labeled training data. I engineered **12 complex features** including logarithmic scaling of transaction amounts, 4-hour rolling velocity windows, and balance depletion ratios.
 
 **Strategic Impact:**
-![ML Evaluation Dashboard](assets/dashboard_ml.png)
+![ML Evaluation Dashboard](assets/ui_ml.png)
 
 * The algorithm evaluated all 6.36 million transactions and identified a **Critical Anomaly Threshold at 0.5%**, isolating just **~31,800 transactions** for human review.
 * Within this heavily reduced investigation scope, it successfully captured **True Positive fraud incidents (Recall: 0.0488)** natively hidden in the dataset. This represents a >99% reduction in manual analyst workload while surfacing high-confidence threats based heavily on the `log(amount)` and balance variance features.
@@ -106,7 +106,7 @@ I deployed an unsupervised **Isolation Forest** algorithm (`scikit-learn`), sele
 ### Phase 4: Automated Executive Reporting (LLM Integration)
 To bridge the gap between backend engineering and business stakeholders, I integrated the Anthropic API. Upon pipeline completion, the LLM consumes the aggregated SQL exceptions and translates millions of rows into an actionable, plain-text email for executive leadership.
 
-![Validated Executive Report](assets/dashboard_executive.png)
+![Validated Executive Report](assets/ui_executive.png)
 
 ---
 
