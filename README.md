@@ -116,9 +116,14 @@ To bridge the gap between backend engineering and business stakeholders, I integ
 
 Due to the size of the dataset (470MB), it is safely `.gitignore`'d. To replicate this platform locally, use the exact scripts provided in this repository:
 
-1. **Fetch Dataset:** Pull the raw logs from Kaggle using the included python module.
-   ```bash
-   python download_data.py
-   ```
-2. **Initialize Infrastructure:** Execute `init_db.ps1` to configure the local PostgreSQL server.
-3. **Execute Pipeline:** Run `resume.ps1` to trigger the Python ingestion, SQL dimensional modeling, Data Quality Auditing, and the Isolation Forest training.
+### Windows Execution
+Simply double-click the included Windows execution file:
+```bash
+RUN_PIPELINE.bat
+```
+This executable batch file will automatically:
+1. Download the Kaggle dataset.
+2. Initialize the PostgreSQL schemas.
+3. Run the complete ETL pipeline, SQL rules, and Isolation Forest training.
+
+*(Note for Linux/Mac users: You can run the pipeline sequentially using `python download_data.py` followed by the provided PowerShell `.ps1` scripts).*
