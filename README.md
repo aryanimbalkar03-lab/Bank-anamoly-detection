@@ -14,24 +14,52 @@ In this project, I architected a hybrid enterprise data pipeline that audits **6
 
 ---
 
-## 2. End-to-End Pipeline Architecture (0 to 1 Process)
+## 2. End-to-End Pipeline Architecture
 
-Below is the complete 0 to 1 architectural flowchart demonstrating how raw data is ingested, modeled, audited, and evaluated by machine learning before being served to executives.
+Below is the complete architectural blueprint detailing the exact schema transitions, engineering techniques, and evaluation methods used in this platform.
 
 ```mermaid
 flowchart TD
-    A[0. Raw Kaggle Dataset<br>6.36M Rows] -->|Ingestion| B[(1. PostgreSQL Staging Layer)]
-    B -->|Defect Injection Control| B
-    B -->|Dimensional Modeling| C[(2. Data Warehouse<br>Kimball Star Schema)]
+    %% Define Styling
+    classDef db fill:#051c2c,stroke:#009ada,stroke-width:2px,color:#fff;
+    classDef process fill:#005f9e,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef ml fill:#831010,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef report fill:#009ada,stroke:#fff,stroke-width:2px,color:#fff;
     
-    C -->|3. Data Quality Auditing| D{SQL Engine<br>30 DAMA Rules}
-    C -->|4. Behavioral Profiling| E{Machine Learning<br>Isolation Forest}
+    %% External Data
+    Kaggle[(Kaggle PaySim<br>6.36M Rows)]:::db
     
-    D --> F[(5. Aggregated Data Marts)]
-    E --> F
+    subgraph Ingestion["Phase 1: Ingestion & Staging"]
+        direction TB
+        Kaggle -->|Bulk Copy Postgres| Raw[(raw.transactions)]:::db
+        Raw -->|SQL Type Casting| Stg[(stg.transactions)]:::db
+        Stg -->|Seeded Injection| Control[167,739 Synthetic Defects Injected]:::process
+    end
     
-    F --> G[6. Anthropic LLM Executive Report]
-    F --> H[7. BI Dashboards & Visualizations]
+    subgraph DW["Phase 2: Dimensional Warehouse (Kimball)"]
+        direction TB
+        Control --> Fact[(dw.fact_transactions<br>B-Tree Indexed)]:::db
+        Control --> Dim1[(dw.dim_customer)]:::db
+        Control --> Dim2[(dw.dim_txn_type)]:::db
+    end
+    
+    subgraph Auditing["Phase 3: Dual-Engine Evaluation"]
+        direction LR
+        Fact --> DQ{PostgreSQL Engine<br>30 DAMA Rules}:::process
+        DQ -->|100% Recall| DQExceptions[(dq.exceptions)]:::db
+        
+        Fact --> Feat[Feature Engineering<br>log amounts, 4h velocity]:::ml
+        Feat --> ML{Isolation Forest<br>Unsupervised ML}:::ml
+        ML -->|0.5% Contamination Threshold| MLAnomalies[(dw.txn_anomaly_score)]:::db
+    end
+    
+    subgraph BI["Phase 4: BI & Actionable Insights"]
+        direction TB
+        DQExceptions --> Marts[(mart.v_rule_summary)]:::db
+        MLAnomalies --> Marts
+        Marts --> LLM[Anthropic Claude API<br>Executive NLP Summary]:::report
+        Marts --> Viz[Enterprise Dashboards<br>Performance & Alerts]:::report
+    end
 ```
 
 * **Dataset Scope:** 6,362,620 transactions (~470 MB) via Kaggle PaySim.
@@ -84,12 +112,11 @@ To bridge the gap between backend engineering and business stakeholders, I integ
 
 ## 4. Local Deployment Instructions
 
-Due to the size of the dataset (470MB), it is safely `.gitignore`'d. To replicate this platform locally:
+Due to the size of the dataset (470MB), it is safely `.gitignore`'d. To replicate this platform locally, use the exact scripts provided in this repository:
 
-1. **Fetch Dataset:** Pull the raw logs from Kaggle.
-   ```python
-   import kagglehub
-   path = kagglehub.dataset_download("ealaxi/paysim1")
+1. **Fetch Dataset:** Pull the raw logs from Kaggle using the included python module.
+   ```bash
+   python download_data.py
    ```
 2. **Initialize Infrastructure:** Execute `init_db.ps1` to configure the local PostgreSQL server.
 3. **Execute Pipeline:** Run `resume.ps1` to trigger the Python ingestion, SQL dimensional modeling, Data Quality Auditing, and the Isolation Forest training.
