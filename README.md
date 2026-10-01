@@ -7,7 +7,7 @@
 
 ## 1. The Problem Statement
 As financial institutions scale, they face a multi-million-dollar, twofold challenge:
-1. **Structural Data Decay:** Millions of daily transactions inevitably suffer from missing fields, broken formats, and ledger imbalances. If untreated, this corrupts downstream BI reporting and violates strict regulatory frameworks (e.g., BCBS 239).
+1. **Structural Data Decay:** Millions of daily transactions inevitably suffer from missing fields, broken formats, and ledger imbalances. If untreated, this corrupts downstream BI reporting and violates strict regulatory frameworks (e.g., inspired by BCBS 239 data-quality principles).
 2. **Behavioral Fraud:** Sophisticated bad actors execute mathematically valid, perfectly formatted transactions that easily bypass standard SQL rules, requiring advanced pattern recognition to catch.
 
 **The Objective:** Architect a hybrid data platform capable of auditing millions of rows at scale. It must utilize a deterministic **PostgreSQL Engine** to sanitize structural decay, paired with an unsupervised **Machine Learning Model** to isolate complex, behavioral anomalies.
@@ -74,7 +74,7 @@ flowchart TD
 ## 4. Execution & Core Syntax
 
 ### Phase 1: Dimensional Modeling & Index Optimization
-Raw flat-file architectures cannot scale for enterprise OLAP queries. I transformed the 6.36M rows into a **Kimball Star Schema** and applied heavy B-Tree indexing on highly queried dimensional foreign keys.
+Raw flat-file architectures cannot scale for enterprise OLAP queries. I transformed the 6.36M rows into a **star-schema-style warehouse layer** and applied heavy B-Tree indexing on highly queried dimensional foreign keys.
 
 **Core Syntax (PostgreSQL):**
 ```sql
@@ -94,8 +94,10 @@ To mathematically validate the auditing engine, I intentionally injected 167,739
 INSERT INTO dq.exceptions (txn_id, rule_name, error_value)
 SELECT txn_id, 'DUP_TXN', amount::text
 FROM (
-    SELECT txn_id, amount, 
-           ROW_NUMBER() OVER(PARTITION BY amount, orig_acct, dest_acct ORDER BY timestamp) as rn
+    SELECT txn_id, amount,
+           ROW_NUMBER() OVER (
+               PARTITION BY step, type, amount, name_orig, name_dest
+               ORDER BY txn_id) AS rn
     FROM dw.fact_transactions
 ) sub
 WHERE rn > 1;
@@ -116,7 +118,7 @@ df['anomaly_score'] = model.fit_predict(df[features])
 # -1 indicates a critical anomaly, 1 indicates normal behavior
 anomalies = df[df['anomaly_score'] == -1]
 ```
-**Impact:** The model isolated a tiny 0.5% investigation haystack (~31,800 records), successfully surfacing true-positive fraud clusters hiding inside the 6.36M rows.
+**Impact:** The model isolated a tiny 0.5% investigation haystack (~31,800 records), successfully captured 17.06% of labelled fraud at 4.41% precision (34.1× the 0.13% base rate). The 0.5% is a setting, not a finding; maximum possible precision at this setting is about 26% hiding inside the 6.36M rows.
 ![ML Evaluation Dashboard](assets/ui_ml.png)
 
 ### Phase 4: Final Business Intelligence Output
@@ -140,3 +142,7 @@ This executable batch file will automatically:
 3. Run the complete ETL pipeline, SQL rules, and Isolation Forest training.
 
 *(Note for Linux/Mac users: You can run the pipeline sequentially using `python download_data.py` followed by executing the `.ps1` shell scripts).*
+
+
+## Limitations
+- synthetic data; defects injected by the author; unsupervised scores, not fraud labels; BI visuals are mockups
